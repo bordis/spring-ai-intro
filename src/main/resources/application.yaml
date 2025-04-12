@@ -1,0 +1,15 @@
+server:
+  servlet:
+    context-path: /spring
+  port : 8080
+
+spring:
+  ai:
+    ollama:
+      chat:
+        options:
+          model: ${SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL}
+          temperature: ${SPRING_AI_OLLAMA_TEMPERATURE}
+          num-predict: -2
+          num-ctx: ${SPRING_AI_OLLAMA_CONTEXT_SIZE}
+      base-url: ${SPRING_AI_OLLAMA_BASE_URL}  
