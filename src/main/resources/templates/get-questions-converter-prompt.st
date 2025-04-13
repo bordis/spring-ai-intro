@@ -1,0 +1,1 @@
+Sou um professor de Java, gere cinco perguntas para um teste básico sobre OO (Orientação a Objetos). {format}
