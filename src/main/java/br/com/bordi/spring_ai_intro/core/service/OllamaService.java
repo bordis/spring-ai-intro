@@ -3,10 +3,13 @@ package br.com.bordi.spring_ai_intro.core.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +25,7 @@ import br.com.bordi.spring_ai_intro.core.model.GetCapitalInfo;
 import br.com.bordi.spring_ai_intro.core.model.GetCapitalRequest;
 import br.com.bordi.spring_ai_intro.core.model.GetCapitalResponse;
 import br.com.bordi.spring_ai_intro.core.model.GetQuestionsResponse;
+import br.com.bordi.spring_ai_intro.core.model.QuestionRecord;
 
 @Service
 public class OllamaService {
@@ -49,6 +53,9 @@ public class OllamaService {
 
     @Value("classpath:templates/get-capital-with-info-converter-prompt.st")
     private Resource getCapitalInfoConverterPrompt;
+
+    @Value("classpath:templates/get-tourist-into-prompt.st")
+    private Resource getTouristIntoPrompt;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -135,19 +142,27 @@ public class OllamaService {
         return List.of(questions);
     }
 
-
     public GetCapitalInfo getCapitalWithInfoConverter(String stateOrCountry) {
         BeanOutputConverter<GetCapitalInfo> parser = new BeanOutputConverter<>(GetCapitalInfo.class);
         String format = parser.getFormat();
         PromptTemplate promptTemplate = new PromptTemplate(getCapitalInfoConverterPrompt);
-
         Prompt prompt = promptTemplate.create(Map.of("stateOrCountry", stateOrCountry, "format", format));
         System.out.println(prompt);
         ChatResponse response = chatModel.call(prompt);
-
         GetCapitalInfo capitalInfo = parser.convert(response.getResults().get(0).getOutput().getText());
-
         return capitalInfo;
+    }
+
+    public AnswerRecord getTouristInfo(QuestionRecord question) {
+        String persona = "Você é um assistente de turismo. Você pode me ajudar a encontrar informações sobre o lugar que estou visitando?";
+        Message userMessage = new UserMessage(question.question());
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(getTouristIntoPrompt);
+        Message systemMessage = systemPromptTemplate.createMessage(Map.of("persona", persona));
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
+        System.out.println(prompt);
+        ChatResponse response = chatModel.call(prompt);
+        System.out.println(response.getResults().get(0).getOutput().getText());
+        return new AnswerRecord(response.getResults().get(0).getOutput().getText());
     }
 
 }

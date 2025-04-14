@@ -83,4 +83,12 @@ public class PublicController {
         List<GetQuestionsResponse> questions = ollamaService.getQuestionResponseConverter();
         return ResponseEntity.ok(questions);
     }
+
+    
+
+    @PostMapping("/touristInfo")
+    public ResponseEntity<AnswerRecord> getTouristInfo(@RequestBody QuestionRecord question) {
+        AnswerRecord answer = ollamaService.getTouristInfo(question);
+        return ResponseEntity.ok(answer);
+    }
 }
